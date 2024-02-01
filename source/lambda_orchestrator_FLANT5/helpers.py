@@ -31,7 +31,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 kendra_client = boto3.client('kendra')
-sagemaker_runtime = boto3.client("sagemaker-runtime", region_name="us-east-1")
+sagemaker_runtime = boto3.client("sagemaker-runtime", region_name="eu-west-2")
 
 model_endpoint=config.config.MODEL_ENDPOINT
 "j2-jumbo-instruct"

@@ -35,9 +35,9 @@ Parameters:
 Mappings:
   ModelMap:
     FLAN-T5-XXL:
-      LambdaCodeS3Bucket : personalize-solution-staging-us-east-1
+      LambdaCodeS3Bucket : personalize-solution-staging-eu-west-2
       LambdaCodeS3Key : kendra-RAG/simple_lambda_orchestrator.zip
-      LangChainLayerS3Bucket: personalize-solution-staging-us-east-1
+      LangChainLayerS3Bucket: personalize-solution-staging-eu-west-2
       LangChainLayerS3Key : kendra-RAG/LangChainLayer.zip
       LambdaFunctionName : simple_lambda_orchestrator
       LambdaHandlerPath : lambda_function.lambda_handler
@@ -48,9 +48,9 @@ Mappings:
       #Image : 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/pytorch-inference:1.12.0-gpu-py38
       Image : amazonaws.com/pytorch-inference:1.12.0-gpu-py38
     FLAN-T5-XL:
-      LambdaCodeS3Bucket : personalize-solution-staging-us-east-1
+      LambdaCodeS3Bucket : personalize-solution-staging-eu-west-2
       LambdaCodeS3Key : kendra-RAG/simple_lambda_orchestrator.zip
-      LangChainLayerS3Bucket: personalize-solution-staging-us-east-1
+      LangChainLayerS3Bucket: personalize-solution-staging-eu-west-2
       LangChainLayerS3Key : kendra-RAG/LangChainLayer.zip
       LambdaFunctionName : simple_lambda_orchestrator
       LambdaHandlerPath : lambda_function.lambda_handler
@@ -232,7 +232,7 @@ Resources:
           
           INDEX_ID = os.environ['INDEX_ID']
           DS_ID = os.environ['DS_ID']
-          AWS_REGION = os.environ['AWS_REGION']
+          AWS_REGION = 'eu-west-2'
           KENDRA = boto3.client('kendra')
           
           def start_data_source_sync(dsId, indexId):

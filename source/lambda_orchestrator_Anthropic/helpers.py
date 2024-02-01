@@ -74,7 +74,7 @@ def create_presigned_url(bucket_name, object_name, expiration=120):
     #boto3.setup_default_session(profile_name='personal')
     # Generate a presigned URL for the S3 object
     #s3_client = boto3.client('s3',region_name="us-east-1",config=boto3.session.Config(signature_version='s3v4',))
-    s3_client = boto3.client('s3',region_name="us-east-1")
+    s3_client = boto3.client('s3',region_name="eu-west-2")
     try:
         response = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': bucket_name,

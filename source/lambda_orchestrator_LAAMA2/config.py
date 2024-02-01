@@ -6,6 +6,6 @@ class Config:
 
     DYNAMODB_TABLE_NAME = 'conversation-history-store'
     KENDRA_INDEX = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    KENDRA_REGION ='us-east-1'
+    KENDRA_REGION ='eu-west-2'
     
 config = Config()
