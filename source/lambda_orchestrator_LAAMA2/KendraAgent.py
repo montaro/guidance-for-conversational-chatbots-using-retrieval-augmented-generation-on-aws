@@ -1,16 +1,22 @@
-#agent
+# agent
 
 import re
-from tools import tools
-from langchain.prompts import StringPromptTemplate
-from langchain import  LLMChain
 from datetime import datetime
-from typing import Dict ,List,Union
-from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser
+from typing import Dict, List, Union
+
+from langchain import LLMChain
+from langchain.agents import (
+    AgentExecutor,
+    AgentOutputParser,
+    LLMSingleActionAgent,
+    Tool,
+)
+from langchain.prompts import StringPromptTemplate
 from langchain.schema import AgentAction, AgentFinish
 
+from tools import tools
 
-#Template for LLAMA2
+# Template for LLAMA2
 template = """You are a conversational AI bot, Answer the questions as best you can using results from the search tool.
 You have access to the following tools:
 
@@ -58,13 +64,12 @@ New input: {input}
 {agent_scratchpad}"""
 
 
-
 class CustomPromptTemplate(StringPromptTemplate):
     # The template to use
     template: str
     # The list of tools available
     tools: List[Tool]
-    
+
     def format(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
         # Format them in a particular way
@@ -76,13 +81,15 @@ class CustomPromptTemplate(StringPromptTemplate):
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
-        kwargs["tools"] = "\n".join([f"{tool.name}: {tool.description}" for tool in self.tools])
+        kwargs["tools"] = "\n".join(
+            [f"{tool.name}: {tool.description}" for tool in self.tools]
+        )
         # Create a list of tool names for the tools provided
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
         return self.template.format(**kwargs)
 
+
 class CustomOutputParser(AgentOutputParser):
-    
     ai_prefix: str = "AI"
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
@@ -98,35 +105,37 @@ class CustomOutputParser(AgentOutputParser):
         action_input = match.group(2)
         return AgentAction(action.strip(), action_input.strip(" ").strip('"'), text)
 
-class KendraAgent():
-    def __init__(self,llm, memory,tools) -> None:
+
+class KendraAgent:
+    def __init__(self, llm, memory, tools) -> None:
         self.llm = llm
         self.memory = memory
         self.tools = tools
         self.agent = self.create_agent()
 
     def create_agent(self):
-        
         output_parser = CustomOutputParser()
         tool_names = [tool.name for tool in tools]
-        
-        prompt= CustomPromptTemplate(
-                template=template,
-                tools=self.tools,
-                input_variables=["input","intermediate_steps","history"]
-                )
-        
+
+        prompt = CustomPromptTemplate(
+            template=template,
+            tools=self.tools,
+            input_variables=["input", "intermediate_steps", "history"],
+        )
+
         llm_chain = LLMChain(llm=self.llm, prompt=prompt)
-        
-        agent= LLMSingleActionAgent(
-                llm_chain=llm_chain,
-                output_parser=output_parser,
-                stop=["\nObservation:"], 
-                allowed_tools=tool_names,
-                verbose=True, 
-                max_iterations=1
-                )
-        agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=self.tools, verbose=True,memory=self.memory)
+
+        agent = LLMSingleActionAgent(
+            llm_chain=llm_chain,
+            output_parser=output_parser,
+            stop=["\nObservation:"],
+            allowed_tools=tool_names,
+            verbose=True,
+            max_iterations=1,
+        )
+        agent_executor = AgentExecutor.from_agent_and_tools(
+            agent=agent, tools=self.tools, verbose=True, memory=self.memory
+        )
         return agent_executor
 
     def run(self, input):
