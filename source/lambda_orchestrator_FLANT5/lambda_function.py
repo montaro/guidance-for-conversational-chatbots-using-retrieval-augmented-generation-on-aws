@@ -52,14 +52,6 @@ def lambda_handler(event, context):
             {"contentType": "PlainText", "content": response_string},
         )
     intentName = currentIntent
-    if intentName is None:
-        response_string = "Sorry, I didn't understand."
-        return helpers.close(
-            session_attributes,
-            intentName,
-            "Fulfilled",
-            {"contentType": "PlainText", "content": response_string},
-        )
 
     # see HANDLERS dict at bottom
     if HANDLERS.get(intentName, False):
