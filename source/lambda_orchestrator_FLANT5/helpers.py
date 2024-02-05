@@ -48,6 +48,7 @@ def close(intent_request, session_attributes, fulfillment_state, message):
     #    response['requestAttributes']   =  intent_request["requestAttributes"]
 
     logger.info(
+        'close func:'
         '<<help_desk_bot>> "Lambda fulfillment function response = \n'
         + pprint.pformat(response, indent=4)
     )
@@ -79,7 +80,13 @@ def get_prediction_llm(question, context):
         raise ValueError(f"Error raised by inference endpoint: {e}")
 
     response_json = json.loads(response["Body"].read().decode("utf-8"))
-    text = response_json["generated_texts"][0]
+
+    print("This the start of the complete model JSON response")
+    print(response_json)
+    print("This the end of the complete model JSON response")
+    text = response_json['generated_texts'][0]
+    print(f"The text from the model response: {text}")
+
     return text
 
 
@@ -94,16 +101,17 @@ def get_kendra_answer(question):
     except:
         return None
 
-    logger.debug(
-        "<<help_desk_bot>> get_kendra_answer() - response = " + json.dumps(response)
-    )
+    msg = f'<<help_desk_bot>> get_kendra_answer() - response = {json.dumps(response)}'
+    logger.debug(msg)
+    print("get_kendra_answer func:")
+    print(msg)
+
     #
     # determine which is the top result from Kendra, based on the Type attribue
     #  - QUESTION_ANSWER = a result from a FAQ: just return the FAQ answer
     #  - ANSWER = text found in a document: return the text passage found in the document plus a link to the document
     #  - DOCUMENT = link(s) to document(s): check for several documents and return the links
     #
-    first_result_type = ""
     try:
         if response["TotalNumberOfResults"] != 0:
             first_result_type = response["ResultItems"][0]["Type"]
@@ -115,6 +123,7 @@ def get_kendra_answer(question):
     if first_result_type == "QUESTION_ANSWER":
         try:
             faq_answer_text = response["ResultItems"][0]["DocumentExcerpt"]["Text"]
+            print('FAQ result text: {faq_answer_text}')
         except KeyError:
             faq_answer_text = "Sorry, I could not find an answer in our FAQs."
 
@@ -131,6 +140,7 @@ def get_kendra_answer(question):
             answer_text = "Here's an excerpt from a document ("
             answer_text += "<" + document_url + "|" + document_title + ">"
             answer_text += ") that might help:\n\n" + document_excerpt_text + "...\n"
+            print(f'Answer text: {answer_text}')
         except KeyError:
             answer_text = "Sorry, I could not find the answer in our documents."
         return get_prediction_llm(question, answer_text)
@@ -138,6 +148,7 @@ def get_kendra_answer(question):
     elif first_result_type == "DOCUMENT":
         # assemble the list of document links
         document_list = "Here are some documents you could review:\n"
+        print(f'Document response: {document_list}')
         for item in response["ResultItems"]:
             document_title = None
             document_url = None
@@ -160,8 +171,10 @@ def get_kendra_answer(question):
 def simple_orchestrator(question):
     # Get answers from Amazon Kendra
     context = get_kendra_answer(question)
+    print(f'Context: {context}')
 
     # Get predictions from LLM based on questuion and Kendra results
     llm_response = get_prediction_llm(question, context)
+    print(f'LLM response: {llm_response}')
 
     return llm_response
